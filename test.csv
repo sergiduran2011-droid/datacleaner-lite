@@ -1,0 +1,5 @@
+ID, Nombre / Apellido , Edad, Email
+1, Juan Perez, 28, juan@example.com
+2, Maria Garcia, , maria@example.com
+3, , 35, 
+4, Carlos Lopez, 42, carlos@example.com

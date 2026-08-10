@@ -1,0 +1,51 @@
+# 🧹 datacleaner-lite
+
+Ultra-lightweight Python library and CLI tool to inspect, clean, and normalize CSV files.
+
+Key features
+- Header normalization to snake_case
+- Missing value counts and simple type inference
+- Duplicate row detection and optional removal
+- Small, dependency-free implementation using the Python standard library
+
+Quickstart
+
+Install locally (editable):
+
+```bash
+git clone <repo>
+cd <repo>
+pip install -e .
+```
+
+CLI
+
+```bash
+# Print report
+datacleaner report data.csv
+
+# Clean file (outputs <name>_cleaned.csv by default)
+datacleaner clean data.csv
+
+# Specify output
+datacleaner clean data.csv -o cleaned.csv
+```
+
+Python API
+
+```python
+import datacleaner as dc
+
+print(dc.generate_report('data.csv'))
+
+dc.clean_file('data.csv', output_path='out.csv')
+```
+
+Testing
+
+```bash
+pip install -U pytest
+pytest -q
+```
+
+License: MIT

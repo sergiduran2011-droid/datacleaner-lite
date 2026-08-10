@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools>=65.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "datacleaner"
+version = "0.2.0"
+description = "Utilities for cleaning and reporting CSV datasets."
+readme = "src/datacleaner/README.md"
+requires-python = ">=3.8"
+license = { text = "MIT" }
+authors = [{ name = "Sergi Duran" }]
+dependencies = []
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+keywords = ["csv", "data-cleaning", "reporting"]
+
+[project.scripts]
+datacleaner = "datacleaner.core:main"
+
+[tool.setuptools]
+package-dir = { "" = "src" }
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.flake8]
+max-line-length = 88

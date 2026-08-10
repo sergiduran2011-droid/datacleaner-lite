@@ -1,0 +1,2 @@
+[console_scripts]
+datacleaner = datacleaner.core:main

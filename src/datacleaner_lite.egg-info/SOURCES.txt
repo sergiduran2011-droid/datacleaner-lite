@@ -1,0 +1,8 @@
+README.md
+pyproject.toml
+src/datacleaner/__init__.py
+src/datacleaner/core.py
+src/datacleaner_lite.egg-info/PKG-INFO
+src/datacleaner_lite.egg-info/SOURCES.txt
+src/datacleaner_lite.egg-info/dependency_links.txt
+src/datacleaner_lite.egg-info/top_level.txt
