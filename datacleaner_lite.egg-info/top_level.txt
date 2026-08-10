@@ -1,4 +1,0 @@
-datacleaner
-env
-src
-tests

@@ -1,7 +1,0 @@
-Metadata-Version: 2.4
-Name: datacleaner-lite
-Version: 0.2.0
-Summary: Libreria ultraligera y CLI sin dependencias para inspeccionar y limpiar datos CSV.
-Author: Sergi Duran
-Requires-Python: >=3.8
-Description-Content-Type: text/markdown
