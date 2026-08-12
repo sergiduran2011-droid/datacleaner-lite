@@ -7,8 +7,10 @@ src/datacleaner.egg-info/PKG-INFO
 src/datacleaner.egg-info/SOURCES.txt
 src/datacleaner.egg-info/dependency_links.txt
 src/datacleaner.egg-info/entry_points.txt
+src/datacleaner.egg-info/requires.txt
 src/datacleaner.egg-info/top_level.txt
 tests/test_clean_file_padding.py
 tests/test_cli.py
 tests/test_core.py
 tests/test_detect_delimiter.py
+tests/test_gzip_bom.py

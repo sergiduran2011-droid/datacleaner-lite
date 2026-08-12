@@ -24,21 +24,4 @@ __all__ = [
     "main",
 ]
 
-__version__ = "0.1.0"
-from .core import (
-    clean_column_name,
-    clean_column_names,
-    detect_delimiter,
-    inspect_csv,
-    generate_report,
-)
-
-__version__ = "0.1.0"
-
-__all__ = [
-    "clean_column_name",
-    "clean_column_names",
-    "detect_delimiter",
-    "inspect_csv",
-    "generate_report",
-]
+__version__ = "0.2.0"

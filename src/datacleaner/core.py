@@ -1,9 +1,16 @@
 import csv
+import gzip
 import re
 import sys
 import unicodedata
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, TextIO, Tuple, Union
+
+from_bytes: Any = None
+try:
+    from charset_normalizer import from_bytes
+except Exception:  # pragma: no cover - optional dependency
+    pass
 
 
 # ==========================================
@@ -20,6 +27,58 @@ def clean_column_name(name: str) -> str:
     name = unicodedata.normalize('NFKD', str(name)).encode('ASCII', 'ignore').decode('utf-8')
     name = re.sub(r'[^\w]+', '_', name)
     return name.strip('_').lower()
+
+
+def open_text_file(path: Union[str, Path], mode: str = 'r', encoding: str = 'utf-8-sig', newline: str = '') -> Any:
+    """Open a text file for reading or writing, transparently handling gzip files.
+
+    - If `path` ends with `.gz`, open with `gzip.open` in text mode.
+    - Otherwise, use built-in `open` with the given encoding.
+    """
+    p = Path(path)
+    m = mode
+    if p.suffix == '.gz':
+        if 'b' in m:
+            return gzip.open(p, mode=m)
+        if 'w' in m:
+            return gzip.open(p, mode='wt', encoding=encoding, newline=newline)
+        return gzip.open(p, mode='rt', encoding=encoding, newline=newline)
+    return open(p, mode=m, encoding=encoding, newline=newline)
+
+
+def detect_encoding(path: Union[str, Path], sample_size: int = 8192) -> str:
+    """Detect encoding using charset-normalizer when available, otherwise fallback.
+
+    Returns an encoding name safe to pass to `open()` (e.g. 'utf-8' or 'utf-8-sig').
+    """
+    p = Path(path)
+    try:
+        # read a sample of bytes (works for gz too)
+        if p.suffix == '.gz':
+            with gzip.open(p, 'rb') as f:
+                sample = f.read(sample_size)
+        else:
+            with open(p, 'rb') as f:
+                sample = f.read(sample_size)
+    except Exception:
+        return 'utf-8'
+
+    if not sample:
+        return 'utf-8'
+
+    if from_bytes is None:
+        return 'utf-8'
+
+    try:
+        results = from_bytes(sample)
+        if results:
+            best = results.best()
+            if best and best.encoding:
+                return best.encoding
+    except Exception:
+        pass
+
+    return 'utf-8'
 
 
 def clean_column_names(headers: List[str]) -> List[str]:
@@ -55,7 +114,7 @@ def detect_delimiter(file_path: Union[str, Path], encoding: str = 'utf-8-sig') -
     """
     path = Path(file_path)
     try:
-        with open(path, newline='', encoding=encoding) as file:
+        with open_text_file(path, mode='r', encoding=encoding, newline='') as file:
             sample = file.read(8192)
     except FileNotFoundError:
         raise FileNotFoundError(f"No se encontró el archivo: {path}")
@@ -64,7 +123,7 @@ def detect_delimiter(file_path: Union[str, Path], encoding: str = 'utf-8-sig') -
         return ','
 
     try:
-        dialect = csv.Sniffer().sniff(sample, delimiters=[',', ';', '\t'])
+        dialect = csv.Sniffer().sniff(sample)
         return dialect.delimiter
     except csv.Error:
         # Fallback: contar ocurrencias en las primeras líneas
@@ -73,7 +132,8 @@ def detect_delimiter(file_path: Union[str, Path], encoding: str = 'utf-8-sig') -
         for line in lines[:20]:
             for d in counts:
                 counts[d] += line.count(d)
-        best = max(counts, key=counts.get)
+        # Use item-based max to satisfy strict typing on key functions
+        best = max(counts.items(), key=lambda item: item[1])[0]
         return best if counts[best] > 0 else ','
 
 
@@ -115,7 +175,7 @@ def inspect_csv(file_path: Union[str, Path], encoding: str = 'utf-8-sig') -> Dic
     duplicate_rows = 0
     type_counts: Dict[str, Dict[str, int]] = {}
 
-    with open(path, newline='', encoding=encoding) as file:
+    with open_text_file(path, mode='r', encoding=encoding, newline='') as file:
         reader = csv.reader(file, delimiter=delimiter)
         try:
             headers = next(reader)
@@ -158,7 +218,7 @@ def inspect_csv(file_path: Union[str, Path], encoding: str = 'utf-8-sig') -> Dic
     column_types = {}
     for header in headers:
         counts = type_counts[header]
-        most_common = max(counts, key=counts.get) if any(counts.values()) else 'string'
+        most_common = max(counts.items(), key=lambda item: item[1])[0] if any(counts.values()) else 'string'
         column_types[header] = most_common if counts[most_common] > 0 else 'string'
 
     return {
@@ -240,8 +300,8 @@ def clean_file(
 
     delimiter = detect_delimiter(in_path)
 
-    with open(in_path, newline='', encoding='utf-8') as infile, \
-         open(out_path, 'w', newline='', encoding='utf-8') as outfile:
+    with open_text_file(in_path, mode='r', encoding='utf-8', newline='') as infile, \
+         open_text_file(out_path, mode='w', encoding='utf-8', newline='') as outfile:
         reader = csv.reader(infile, delimiter=delimiter)
         writer = csv.writer(outfile)
 
