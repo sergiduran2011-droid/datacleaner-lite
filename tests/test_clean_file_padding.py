@@ -17,4 +17,4 @@ def test_padding_and_fill(tmp_path):
         rows = list(reader)
         assert len(rows[0]) == len(hdr)
         # missing value padded as empty string
-        assert rows[0][2] == ''
+        assert rows[0][2] == ""

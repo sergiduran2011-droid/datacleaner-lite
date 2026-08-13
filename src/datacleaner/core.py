@@ -17,6 +17,7 @@ except Exception:  # pragma: no cover - optional dependency
 # 1. TRATAMIENTO DE CADENAS Y ENCABEZADOS
 # ==========================================
 
+
 def clean_column_name(name: str) -> str:
     """
     Limpia un nombre de columna individual:
@@ -24,12 +25,21 @@ def clean_column_name(name: str) -> str:
     - Convierte a minúsculas.
     - Reemplaza caracteres no alfanuméricos por '_'.
     """
-    name = unicodedata.normalize('NFKD', str(name)).encode('ASCII', 'ignore').decode('utf-8')
-    name = re.sub(r'[^\w]+', '_', name)
-    return name.strip('_').lower()
+    name = (
+        unicodedata.normalize("NFKD", str(name))
+        .encode("ASCII", "ignore")
+        .decode("utf-8")
+    )
+    name = re.sub(r"[^\w]+", "_", name)
+    return name.strip("_").lower()
 
 
-def open_text_file(path: Union[str, Path], mode: str = 'r', encoding: str = 'utf-8-sig', newline: str = '') -> Any:
+def open_text_file(
+    path: Union[str, Path],
+    mode: str = "r",
+    encoding: str = "utf-8-sig",
+    newline: str = "",
+) -> Any:
     """Open a text file for reading or writing, transparently handling gzip files.
 
     - If `path` ends with `.gz`, open with `gzip.open` in text mode.
@@ -37,12 +47,12 @@ def open_text_file(path: Union[str, Path], mode: str = 'r', encoding: str = 'utf
     """
     p = Path(path)
     m = mode
-    if p.suffix == '.gz':
-        if 'b' in m:
+    if p.suffix == ".gz":
+        if "b" in m:
             return gzip.open(p, mode=m)
-        if 'w' in m:
-            return gzip.open(p, mode='wt', encoding=encoding, newline=newline)
-        return gzip.open(p, mode='rt', encoding=encoding, newline=newline)
+        if "w" in m:
+            return gzip.open(p, mode="wt", encoding=encoding, newline=newline)
+        return gzip.open(p, mode="rt", encoding=encoding, newline=newline)
     return open(p, mode=m, encoding=encoding, newline=newline)
 
 
@@ -54,20 +64,20 @@ def detect_encoding(path: Union[str, Path], sample_size: int = 8192) -> str:
     p = Path(path)
     try:
         # read a sample of bytes (works for gz too)
-        if p.suffix == '.gz':
-            with gzip.open(p, 'rb') as f:
+        if p.suffix == ".gz":
+            with gzip.open(p, "rb") as f:
                 sample = f.read(sample_size)
         else:
-            with open(p, 'rb') as f:
+            with open(p, "rb") as f:
                 sample = f.read(sample_size)
     except Exception:
-        return 'utf-8'
+        return "utf-8"
 
     if not sample:
-        return 'utf-8'
+        return "utf-8"
 
     if from_bytes is None:
-        return 'utf-8'
+        return "utf-8"
 
     try:
         results = from_bytes(sample)
@@ -78,7 +88,7 @@ def detect_encoding(path: Union[str, Path], sample_size: int = 8192) -> str:
     except Exception:
         pass
 
-    return 'utf-8'
+    return "utf-8"
 
 
 def clean_column_names(headers: List[str]) -> List[str]:
@@ -92,11 +102,11 @@ def clean_column_names(headers: List[str]) -> List[str]:
         base_name = clean_column_name(header) or "column"
         cleaned = base_name
         counter = 1
-        
+
         while cleaned in cleaned_names:
             cleaned = f"{base_name}_{counter}"
             counter += 1
-            
+
         cleaned_names.append(cleaned)
 
     return cleaned_names
@@ -106,7 +116,8 @@ def clean_column_names(headers: List[str]) -> List[str]:
 # 2. DETECCIÓN DE TIPOS Y DELIMITADORES
 # ==========================================
 
-def detect_delimiter(file_path: Union[str, Path], encoding: str = 'utf-8-sig') -> str:
+
+def detect_delimiter(file_path: Union[str, Path], encoding: str = "utf-8-sig") -> str:
     """Detecta automáticamente el delimitador de un CSV (',', ';', '\t').
 
     Usa `csv.Sniffer` sobre una muestra y, si falla, cae en un
@@ -114,13 +125,13 @@ def detect_delimiter(file_path: Union[str, Path], encoding: str = 'utf-8-sig') -
     """
     path = Path(file_path)
     try:
-        with open_text_file(path, mode='r', encoding=encoding, newline='') as file:
+        with open_text_file(path, mode="r", encoding=encoding, newline="") as file:
             sample = file.read(8192)
     except FileNotFoundError:
         raise FileNotFoundError(f"No se encontró el archivo: {path}")
 
     if not sample:
-        return ','
+        return ","
 
     try:
         dialect = csv.Sniffer().sniff(sample)
@@ -128,13 +139,13 @@ def detect_delimiter(file_path: Union[str, Path], encoding: str = 'utf-8-sig') -
     except csv.Error:
         # Fallback: contar ocurrencias en las primeras líneas
         lines = sample.splitlines()
-        counts = {',': 0, ';': 0, '\t': 0}
+        counts = {",": 0, ";": 0, "\t": 0}
         for line in lines[:20]:
             for d in counts:
                 counts[d] += line.count(d)
         # Use item-based max to satisfy strict typing on key functions
         best = max(counts.items(), key=lambda item: item[1])[0]
-        return best if counts[best] > 0 else ','
+        return best if counts[best] > 0 else ","
 
 
 def infer_type(value: str) -> str:
@@ -142,7 +153,7 @@ def infer_type(value: str) -> str:
     v = value.strip()
     if not v:
         return "empty"
-    if v.isdigit() or (v.startswith('-') and v[1:].isdigit()):
+    if v.isdigit() or (v.startswith("-") and v[1:].isdigit()):
         return "int"
     try:
         float(v)
@@ -158,7 +169,10 @@ def infer_type(value: str) -> str:
 # 3. INSPECCIÓN COMPLETA Y REPORTE
 # ==========================================
 
-def inspect_csv(file_path: Union[str, Path], encoding: str = 'utf-8-sig') -> Dict[str, Any]:
+
+def inspect_csv(
+    file_path: Union[str, Path], encoding: str = "utf-8-sig"
+) -> Dict[str, Any]:
     """
     Inspecciona un CSV eficientemente:
     - Recuento de filas y columnas.
@@ -175,23 +189,25 @@ def inspect_csv(file_path: Union[str, Path], encoding: str = 'utf-8-sig') -> Dic
     duplicate_rows = 0
     type_counts: Dict[str, Dict[str, int]] = {}
 
-    with open_text_file(path, mode='r', encoding=encoding, newline='') as file:
+    with open_text_file(path, mode="r", encoding=encoding, newline="") as file:
         reader = csv.reader(file, delimiter=delimiter)
         try:
             headers = next(reader)
         except StopIteration:
             return {
-                'total_rows': 0,
-                'total_cols': 0,
-                'null_counts': {},
-                'headers': [],
-                'duplicate_rows': 0,
-                'column_types': {},
+                "total_rows": 0,
+                "total_cols": 0,
+                "null_counts": {},
+                "headers": [],
+                "duplicate_rows": 0,
+                "column_types": {},
             }
 
         total_cols = len(headers)
         null_counts = {header: 0 for header in headers}
-        type_counts = {header: {'int': 0, 'float': 0, 'bool': 0, 'string': 0} for header in headers}
+        type_counts = {
+            header: {"int": 0, "float": 0, "bool": 0, "string": 0} for header in headers
+        }
 
         for row in reader:
             # Ignorar filas completamente vacías
@@ -206,8 +222,8 @@ def inspect_csv(file_path: Union[str, Path], encoding: str = 'utf-8-sig') -> Dic
                 seen_rows.add(row_tuple)
 
             for index in range(total_cols):
-                val = row[index] if index < len(row) else ''
-                if val is None or str(val).strip() == '':
+                val = row[index] if index < len(row) else ""
+                if val is None or str(val).strip() == "":
                     null_counts[headers[index]] += 1
                 else:
                     t = infer_type(val)
@@ -218,16 +234,20 @@ def inspect_csv(file_path: Union[str, Path], encoding: str = 'utf-8-sig') -> Dic
     column_types = {}
     for header in headers:
         counts = type_counts[header]
-        most_common = max(counts.items(), key=lambda item: item[1])[0] if any(counts.values()) else 'string'
-        column_types[header] = most_common if counts[most_common] > 0 else 'string'
+        most_common = (
+            max(counts.items(), key=lambda item: item[1])[0]
+            if any(counts.values())
+            else "string"
+        )
+        column_types[header] = most_common if counts[most_common] > 0 else "string"
 
     return {
-        'total_rows': total_rows,
-        'total_cols': total_cols,
-        'null_counts': null_counts,
-        'headers': headers,
-        'duplicate_rows': duplicate_rows,
-        'column_types': column_types,
+        "total_rows": total_rows,
+        "total_cols": total_cols,
+        "null_counts": null_counts,
+        "headers": headers,
+        "duplicate_rows": duplicate_rows,
+        "column_types": column_types,
     }
 
 
@@ -238,22 +258,24 @@ def generate_report(file_path: Union[str, Path]) -> str:
     """
     path = Path(file_path)
     metrics = inspect_csv(path)
-    
-    total_rows = metrics['total_rows']
-    total_cols = metrics['total_cols']
-    headers = metrics['headers']
-    null_counts = metrics['null_counts']
-    dup_rows = metrics['duplicate_rows']
-    col_types = metrics['column_types']
-    
+
+    total_rows = metrics["total_rows"]
+    total_cols = metrics["total_cols"]
+    headers = metrics["headers"]
+    null_counts = metrics["null_counts"]
+    dup_rows = metrics["duplicate_rows"]
+    col_types = metrics["column_types"]
+
     lines = []
     lines.append("=" * 70)
     lines.append(f"📊 REPORTEDATACLEANER | {path.name}")
     lines.append("=" * 70)
     lines.append(f"📁 Ruta: {path.resolve()}")
-    lines.append(f"📐 Filas: {total_rows:,}  |  Columnas: {total_cols}  |  Filas duplicadas: {dup_rows:,}")
+    lines.append(
+        f"📐 Filas: {total_rows:,}  |  Columnas: {total_cols}  |  Filas duplicadas: {dup_rows:,}"
+    )
     lines.append("-" * 70)
-    
+
     if total_cols == 0:
         lines.append("⚠️ El archivo está vacío o no contiene datos válidos.")
     else:
@@ -262,14 +284,16 @@ def generate_report(file_path: Union[str, Path]) -> str:
         for header in headers:
             nulls = null_counts.get(header, 0)
             pct = (nulls / total_rows * 100) if total_rows > 0 else 0.0
-            ctype = col_types.get(header, 'string')
-            
+            ctype = col_types.get(header, "string")
+
             filled = int(round(pct / 10))
             bar = "█" * filled + "░" * (10 - filled)
-            
+
             header_display = header[:21]
-            lines.append(f"{header_display:<22} {ctype:<8} {nulls:>8,}   {pct:>5.1f}% [{bar}]")
-            
+            lines.append(
+                f"{header_display:<22} {ctype:<8} {nulls:>8,}   {pct:>5.1f}% [{bar}]"
+            )
+
     lines.append("=" * 70)
     return "\n".join(lines)
 
@@ -278,11 +302,12 @@ def generate_report(file_path: Union[str, Path]) -> str:
 # 4. LIMPIEZA PROFUNDA Y EXPORTACIÓN
 # ==========================================
 
+
 def clean_file(
     input_path: Union[str, Path],
     output_path: Optional[Union[str, Path]] = None,
     remove_duplicates: bool = True,
-    fill_nulls: Optional[str] = None
+    fill_nulls: Optional[str] = None,
 ) -> Path:
     """
     Limpia un archivo CSV completo y lo guarda en disco:
@@ -300,8 +325,11 @@ def clean_file(
 
     delimiter = detect_delimiter(in_path)
 
-    with open_text_file(in_path, mode='r', encoding='utf-8', newline='') as infile, \
-         open_text_file(out_path, mode='w', encoding='utf-8', newline='') as outfile:
+    with open_text_file(
+        in_path, mode="r", encoding="utf-8", newline=""
+    ) as infile, open_text_file(
+        out_path, mode="w", encoding="utf-8", newline=""
+    ) as outfile:
         reader = csv.reader(infile, delimiter=delimiter)
         writer = csv.writer(outfile)
 
@@ -321,11 +349,18 @@ def clean_file(
                 continue
 
             # Limpiar espacios de cada celda
-            cleaned_row = [f.strip() if f.strip() else (fill_nulls if fill_nulls is not None else '') for f in row]
+            cleaned_row = [
+                (
+                    f.strip()
+                    if f.strip()
+                    else (fill_nulls if fill_nulls is not None else "")
+                )
+                for f in row
+            ]
 
             # Ajustar la longitud de la fila si faltan columnas
             while len(cleaned_row) < len(cleaned_headers):
-                cleaned_row.append(fill_nulls if fill_nulls is not None else '')
+                cleaned_row.append(fill_nulls if fill_nulls is not None else "")
 
             row_tuple = tuple(cleaned_row)
             if remove_duplicates:
@@ -342,6 +377,7 @@ def clean_file(
 # ==========================================
 # 5. INTERFAZ DE LÍNEA DE COMANDOS (CLI)
 # ==========================================
+
 
 def main():
     """Punto de entrada de la consola (CLI)."""

@@ -1,5 +1,5 @@
-import sys
 import csv
+import sys
 
 import datacleaner as dc
 
