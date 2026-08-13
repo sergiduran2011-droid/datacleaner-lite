@@ -4,7 +4,7 @@ import re
 import sys
 import unicodedata
 from pathlib import Path
-from typing import Any, Dict, List, Optional, TextIO, Tuple, Union
+from typing import Any, Dict, List, Optional, Union
 
 from_bytes: Any = None
 try:

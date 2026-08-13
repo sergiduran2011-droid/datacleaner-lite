@@ -36,4 +36,4 @@ def test_clean_writes_gzip(tmp_path: Path):
         lines = f.read().splitlines()
         assert lines[0].lower().startswith("a")
         # only one data row because duplicate removed
-        assert len([l for l in lines if l.strip()]) == 2
+        assert len([line for line in lines if line.strip()]) == 2
