@@ -29,3 +29,9 @@ where = ["src"]
 
 [tool.flake8]
 max-line-length = 88
+
+[tool.isort]
+profile = "black"
+
+[tool.black]
+target-version = ["py311"]
