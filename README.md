@@ -234,7 +234,7 @@ If you prefer using a classic API token (less recommended), create a `PYPI_API_T
 
 Contributions, bug reports and PRs are welcome. Open an issue with a minimal repro if you find a bug.
 
-For questions or maintenance contact: Sergi Durán <sergiduran@local>
+For questions or maintenance contact: Sergi Durán <sergiduran2011@gmail.com>
 
 Please follow the contributor checklist in `CONTRIBUTING.md` if you add features.
 
