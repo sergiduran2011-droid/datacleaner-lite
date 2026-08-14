@@ -4,3 +4,5 @@ __pycache__/
 .mypy_cache/
 *.pyc
 test_cleaned.csv
+__pycache__/
+*.pyc
