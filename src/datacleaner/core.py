@@ -325,11 +325,10 @@ def clean_file(
 
     delimiter = detect_delimiter(in_path)
 
-    with open_text_file(
-        in_path, mode="r", encoding="utf-8", newline=""
-    ) as infile, open_text_file(
-        out_path, mode="w", encoding="utf-8", newline=""
-    ) as outfile:
+    with (
+        open_text_file(in_path, mode="r", encoding="utf-8", newline="") as infile,
+        open_text_file(out_path, mode="w", encoding="utf-8", newline="") as outfile,
+    ):
         reader = csv.reader(infile, delimiter=delimiter)
         writer = csv.writer(outfile)
 
