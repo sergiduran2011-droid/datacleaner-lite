@@ -4,8 +4,15 @@ Exporta las funciones principales del paquete para uso desde la línea
 de comandos o como librería importable.
 """
 
-from .core import (clean_column_name, clean_column_names, clean_file,
-                   detect_delimiter, generate_report, inspect_csv, main)
+from .core import (
+    clean_column_name,
+    clean_column_names,
+    clean_file,
+    detect_delimiter,
+    generate_report,
+    inspect_csv,
+    main,
+)
 
 __all__ = [
     "clean_column_name",
